@@ -1,30 +1,35 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useParams } from 'react-router-dom'
+import { useQuery, gql } from '@apollo/client'
 
-// In this file we need to:
-
-// 1. Display a detail view of a specific character given an ID, where could we get the ID from?
-// 2. Make an Api call and display the result on the page
+const CHARACTER_QUERY = gql`
+  query character($id: ID) {
+    character(id: $id) {
+      name
+      image
+    }
+  }
+`
 
 const CharacterDetail = () => {
-  const [character, setCharacter] = useState({})
   const { id } = useParams()
+  const { loading, error, data } = useQuery(CHARACTER_QUERY, {
+    variables: { id }
+  })
 
-  useEffect(() => {
-    fetch(`https://rickandmortyapi.com/api/character/${id}`)
-      .then(result => result.json())
-      .then(data => setCharacter(data))
-      .catch(error => console.log(error))
-  }, [])
-
-  if (!character.id) {
+  if (loading) {
     return <p>...loading</p>
   }
+
+  if (error) {
+    console.log(error)
+  }
+
   return (
-    <div>
-      <h1>{character.name}</h1>
-      <img src={character.image}></img>
-    </div>
+    <>
+      <h1>{data.character.name}</h1>
+      <img src={data.character.image}></img>
+    </>
   )
 }
 
